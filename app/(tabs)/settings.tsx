@@ -1,64 +1,24 @@
+import { AppCard } from '@/components/app-card';
+import { AppScreen } from '@/components/app-screen';
+import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { StyleSheet, View } from 'react-native';
 
 export default function SettingsScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Settings</ThemedText>
-        <ThemedText style={styles.summary}>
-          Manage profile, app preferences, and local data options.
-        </ThemedText>
-      </ThemedView>
+    <AppScreen title="Settings" description="Manage profile, app preferences, and local data options.">
+      <EmptyState title="No local profile" message="No local profile is active on this device." />
 
-      <View style={styles.card}>
-        <ThemedText type="subtitle">Profile</ThemedText>
-        <ThemedText style={styles.cardText}>
-          No local profile is active on this device.
-        </ThemedText>
-      </View>
-
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Privacy</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           Job application data stays local on this device by default.
         </ThemedText>
-      </View>
+      </AppCard>
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Appearance</ThemedText>
-        <ThemedText style={styles.cardText}>
-          The app follows the device appearance setting.
-        </ThemedText>
-      </View>
-    </ThemedView>
+        <ThemedText>The app follows the device appearance setting.</ThemedText>
+      </AppCard>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 16,
-  },
-  header: {
-    gap: 12,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  summary: {
-    fontSize: 17,
-    lineHeight: 25,
-  },
-  card: {
-    borderColor: '#D7DEE8',
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16,
-  },
-  cardText: {
-    lineHeight: 23,
-  },
-});

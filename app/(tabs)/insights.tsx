@@ -1,64 +1,38 @@
+import { AppCard } from '@/components/app-card';
+import { AppScreen } from '@/components/app-screen';
+import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { StyleSheet, View } from 'react-native';
 
 export default function TabTwoScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Insights</ThemedText>
-        <ThemedText style={styles.summary}>
-          Save applications, categories, and targets to see progress summaries here.
-        </ThemedText>
-      </ThemedView>
+    <AppScreen
+      title="Insights"
+      description="Save applications, categories, and targets to see progress summaries here.">
+      <EmptyState
+        title="No insight data"
+        message="Insights are calculated from stored applications once records are available."
+      />
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">This week</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           0 applications recorded. Weekly progress is calculated from stored application records.
         </ThemedText>
-      </View>
+      </AppCard>
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Category breakdown</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           No categories yet. Category summaries show how applications are spread across role types.
         </ThemedText>
-      </View>
+      </AppCard>
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Target progress</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           No target set. Target summaries show progress, remaining applications, and exceeded goals.
         </ThemedText>
-      </View>
-    </ThemedView>
+      </AppCard>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 16,
-  },
-  header: {
-    gap: 12,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  summary: {
-    fontSize: 17,
-    lineHeight: 25,
-  },
-  card: {
-    borderColor: '#D7DEE8',
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16,
-  },
-  cardText: {
-    lineHeight: 23,
-  },
-});

@@ -1,66 +1,30 @@
+import { AppCard } from '@/components/app-card';
+import { AppScreen } from '@/components/app-screen';
+import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { StyleSheet, View } from 'react-native';
 
 export default function TargetsScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Targets</ThemedText>
-        <ThemedText style={styles.summary}>
-          Set weekly or monthly goals for job application volume.
-        </ThemedText>
-      </ThemedView>
+    <AppScreen title="Targets" description="Set weekly or monthly goals for job application volume.">
+      <EmptyState
+        title="No targets set"
+        message="Targets show the goal amount, completed applications, remaining applications, and whether the goal has been met."
+      />
 
-      <View style={styles.card}>
-        <ThemedText type="subtitle">No targets set</ThemedText>
-        <ThemedText style={styles.cardText}>
-          Targets show the goal amount, completed applications, remaining applications, and whether
-          the goal has been met.
-        </ThemedText>
-      </View>
-
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Global targets</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           Global targets count every saved application in the selected week or month.
         </ThemedText>
-      </View>
+      </AppCard>
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Category targets</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           Category targets focus on specific role types such as graduate roles, internships, or
           remote positions.
         </ThemedText>
-      </View>
-    </ThemedView>
+      </AppCard>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 16,
-  },
-  header: {
-    gap: 12,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  summary: {
-    fontSize: 17,
-    lineHeight: 25,
-  },
-  card: {
-    borderColor: '#D7DEE8',
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16,
-  },
-  cardText: {
-    lineHeight: 23,
-  },
-});

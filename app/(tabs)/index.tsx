@@ -1,66 +1,32 @@
+import { AppCard } from '@/components/app-card';
+import { AppScreen } from '@/components/app-screen';
+import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Applications</ThemedText>
-        <ThemedText style={styles.summary}>
-          Keep job applications, statuses, targets, and notes organised privately on this device.
-        </ThemedText>
-      </ThemedView>
+    <AppScreen
+      title="Applications"
+      description="Keep job applications, statuses, targets, and notes organised privately on this device.">
+      <EmptyState
+        title="No applications yet"
+        message="No applications have been added yet. Saved applications show company, role, date, category, status, and notes."
+      />
 
-      <View style={styles.card}>
-        <ThemedText type="subtitle">No applications yet</ThemedText>
-        <ThemedText style={styles.cardText}>
-          No applications have been added yet. Saved applications show company, role, date,
-          category, status, and notes.
-        </ThemedText>
-      </View>
-
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Status history</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           Status updates such as applied, interviewing, offer, rejected, or withdrawn are shown as a
           timeline for each application.
         </ThemedText>
-      </View>
+      </AppCard>
 
-      <View style={styles.card}>
+      <AppCard>
         <ThemedText type="subtitle">Targets</ThemedText>
-        <ThemedText style={styles.cardText}>
+        <ThemedText>
           Weekly and monthly goals compare target application volume with completed applications.
         </ThemedText>
-      </View>
-    </ThemedView>
+      </AppCard>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 16,
-  },
-  header: {
-    gap: 12,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  summary: {
-    fontSize: 17,
-    lineHeight: 25,
-  },
-  card: {
-    borderColor: '#D7DEE8',
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-    padding: 16,
-  },
-  cardText: {
-    lineHeight: 23,
-  },
-});
