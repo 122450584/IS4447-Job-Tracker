@@ -2,36 +2,34 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { StyleSheet, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Applications</ThemedText>
+        <ThemedText type="title">Settings</ThemedText>
         <ThemedText style={styles.summary}>
-          Keep job applications, statuses, targets, and notes organised privately on this device.
+          Manage profile, app preferences, and local data options.
         </ThemedText>
       </ThemedView>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">No applications yet</ThemedText>
+        <ThemedText type="subtitle">Profile</ThemedText>
         <ThemedText style={styles.cardText}>
-          No applications have been added yet. Saved applications show company, role, date,
-          category, status, and notes.
+          No local profile is active on this device.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Status history</ThemedText>
+        <ThemedText type="subtitle">Privacy</ThemedText>
         <ThemedText style={styles.cardText}>
-          Status updates such as applied, interviewing, offer, rejected, or withdrawn are shown as a
-          timeline for each application.
+          Job application data stays local on this device by default.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Targets</ThemedText>
+        <ThemedText type="subtitle">Appearance</ThemedText>
         <ThemedText style={styles.cardText}>
-          Weekly and monthly goals compare target application volume with completed applications.
+          The app follows the device appearance setting.
         </ThemedText>
       </View>
     </ThemedView>

@@ -9,7 +9,7 @@ export default function ModalScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Application Details</ThemedText>
       <ThemedText style={styles.description}>
-        Detailed application information and status history will appear here.
+        Detailed application information and status history appear here.
       </ThemedText>
       <Link href="/" dismissTo style={styles.link}>
         <ThemedText type="link">Go to tracker</ThemedText>

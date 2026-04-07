@@ -2,37 +2,36 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { StyleSheet, View } from 'react-native';
 
-export default function TabTwoScreen() {
+export default function TargetsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Insights</ThemedText>
+        <ThemedText type="title">Targets</ThemedText>
         <ThemedText style={styles.summary}>
-          Progress summaries will appear here after applications, categories, and targets are saved.
+          Set weekly or monthly goals for job application volume.
         </ThemedText>
       </ThemedView>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">This week</ThemedText>
+        <ThemedText type="subtitle">No targets set</ThemedText>
         <ThemedText style={styles.cardText}>
-          0 applications recorded. Weekly progress will be calculated from stored application
-          records.
+          Targets show the goal amount, completed applications, remaining applications, and whether
+          the goal has been met.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Category breakdown</ThemedText>
+        <ThemedText type="subtitle">Global targets</ThemedText>
         <ThemedText style={styles.cardText}>
-          No categories yet. Once categories exist, this view will show how applications are spread
-          across role types.
+          Global targets count every saved application in the selected week or month.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Target progress</ThemedText>
+        <ThemedText type="subtitle">Category targets</ThemedText>
         <ThemedText style={styles.cardText}>
-          No target set. Future summaries will show progress, remaining applications, and whether a
-          target has been exceeded.
+          Category targets focus on specific role types such as graduate roles, internships, or
+          remote positions.
         </ThemedText>
       </View>
     </ThemedView>

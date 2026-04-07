@@ -2,36 +2,34 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { StyleSheet, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function TabTwoScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Applications</ThemedText>
+        <ThemedText type="title">Insights</ThemedText>
         <ThemedText style={styles.summary}>
-          Keep job applications, statuses, targets, and notes organised privately on this device.
+          Save applications, categories, and targets to see progress summaries here.
         </ThemedText>
       </ThemedView>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">No applications yet</ThemedText>
+        <ThemedText type="subtitle">This week</ThemedText>
         <ThemedText style={styles.cardText}>
-          No applications have been added yet. Saved applications show company, role, date,
-          category, status, and notes.
+          0 applications recorded. Weekly progress is calculated from stored application records.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Status history</ThemedText>
+        <ThemedText type="subtitle">Category breakdown</ThemedText>
         <ThemedText style={styles.cardText}>
-          Status updates such as applied, interviewing, offer, rejected, or withdrawn are shown as a
-          timeline for each application.
+          No categories yet. Category summaries show how applications are spread across role types.
         </ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">Targets</ThemedText>
+        <ThemedText type="subtitle">Target progress</ThemedText>
         <ThemedText style={styles.cardText}>
-          Weekly and monthly goals compare target application volume with completed applications.
+          No target set. Target summaries show progress, remaining applications, and exceeded goals.
         </ThemedText>
       </View>
     </ThemedView>
