@@ -4,6 +4,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { AppCard } from '@/components/app-card';
 import { AppButton } from '@/components/app-button';
 import { AppScreen } from '@/components/app-screen';
+import { CategoryManager } from '@/components/category-manager';
 import { FormField } from '@/components/form-field';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
@@ -21,13 +22,17 @@ export default function SettingsScreen() {
   const isRegistering = mode === 'register';
 
   async function handleSubmit() {
-    if (isRegistering) {
-      await register({ name, email, password });
-    } else {
-      await login({ email, password });
-    }
+    try {
+      if (isRegistering) {
+        await register({ name, email, password });
+      } else {
+        await login({ email, password });
+      }
 
-    setPassword('');
+      setPassword('');
+    } catch {
+      // error is captured in the hook's error state
+    }
   }
 
   function handleDeleteProfile() {
@@ -58,6 +63,8 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle">Privacy</ThemedText>
           <ThemedText>Job application data stays local on this device by default.</ThemedText>
         </AppCard>
+
+        <CategoryManager userId={user.id} />
 
         <View style={styles.actions}>
           <AppButton title="Log out" variant="secondary" onPress={logout} />
