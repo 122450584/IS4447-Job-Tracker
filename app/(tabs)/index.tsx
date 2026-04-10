@@ -1,30 +1,39 @@
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+
 import { AppCard } from '@/components/app-card';
 import { AppScreen } from '@/components/app-screen';
-import { EmptyState } from '@/components/empty-state';
+import { ApplicationManager } from '@/components/application-manager';
 import { ThemedText } from '@/components/themed-text';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function HomeScreen() {
+  const { reloadUser, user } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadUser();
+    }, [reloadUser])
+  );
+
+  if (user) {
+    return (
+      <AppScreen
+        title="Applications"
+        description="Track your job applications in one place.">
+        <ApplicationManager userId={user.id} />
+      </AppScreen>
+    );
+  }
+
   return (
     <AppScreen
       title="Applications"
-      description="Keep job applications, statuses, targets, and notes organised privately on this device.">
-      <EmptyState
-        title="No applications yet"
-        message="No applications have been added yet. Saved applications show company, role, date, category, status, and notes."
-      />
-
+      description="Track your job applications in one place.">
       <AppCard>
-        <ThemedText type="subtitle">Status history</ThemedText>
+        <ThemedText type="subtitle">Sign in to get started</ThemedText>
         <ThemedText>
-          Status updates such as applied, interviewing, offer, rejected, or withdrawn are shown as a
-          timeline for each application.
-        </ThemedText>
-      </AppCard>
-
-      <AppCard>
-        <ThemedText type="subtitle">Targets</ThemedText>
-        <ThemedText>
-          Weekly and monthly goals compare target application volume with completed applications.
+          Create a local profile in Settings to start recording job applications.
         </ThemedText>
       </AppCard>
     </AppScreen>

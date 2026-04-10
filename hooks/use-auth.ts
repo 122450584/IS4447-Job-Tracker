@@ -25,6 +25,10 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const reloadUser = useCallback(() => {
+    setUser(getCurrentUser());
+  }, []);
+
   const register = useCallback(async (input: RegisterInput) => {
     setIsLoading(true);
     setError(null);
@@ -80,6 +84,7 @@ export function useAuth() {
     isLoading,
     login,
     logout,
+    reloadUser,
     register,
     removeProfile,
     user,
