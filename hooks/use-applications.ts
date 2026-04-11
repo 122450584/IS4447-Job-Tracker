@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { type Application } from '@/db/schema';
+import { type Application, type ApplicationStatusLog } from '@/db/schema';
 import {
   type ApplicationInput,
   createApplication,
   deleteApplication,
+  listApplicationStatusLogs,
   listApplications,
   updateApplication,
   type UpdateApplicationInput,
@@ -14,6 +15,9 @@ export function useApplications(userId: number | null | undefined) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [statusLogsByApplicationId, setStatusLogsByApplicationId] = useState<
+    Record<number, ApplicationStatusLog[]>
+  >({});
 
   const reloadApplications = useCallback(() => {
     if (!userId) {
@@ -105,13 +109,39 @@ export function useApplications(userId: number | null | undefined) {
     [userId]
   );
 
+  const loadStatusLogs = useCallback(
+    (applicationId: number) => {
+      if (!userId) {
+        return [];
+      }
+
+      setError(null);
+
+      try {
+        const logs = listApplicationStatusLogs(applicationId, userId);
+        setStatusLogsByApplicationId((currentLogs) => ({
+          ...currentLogs,
+          [applicationId]: logs,
+        }));
+        return logs;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Status history could not be loaded.';
+        setError(message);
+        return [];
+      }
+    },
+    [userId]
+  );
+
   return {
     addApplication,
     applications,
     editApplication,
     error,
     isLoading,
+    loadStatusLogs,
     reloadApplications,
     removeApplication,
+    statusLogsByApplicationId,
   };
 }

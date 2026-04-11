@@ -1,4 +1,4 @@
-import { type Application, type ApplicationStatus } from '@/db/schema';
+import { type Application, type ApplicationStatus, type ApplicationStatusLog } from '@/db/schema';
 
 export type ApplicationInput = {
   userId: number;
@@ -19,7 +19,13 @@ type StoredApplication = Omit<Application, 'created_at' | 'updated_at'> & {
   updated_at: string;
 };
 
+type StoredApplicationStatusLog = Omit<ApplicationStatusLog, 'changed_at' | 'created_at'> & {
+  changed_at: string;
+  created_at: string;
+};
+
 const applicationsStorageKey = 'job_tracker_applications';
+const statusLogsStorageKey = 'job_tracker_application_status_logs';
 
 function canUseStorage() {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -68,6 +74,49 @@ function writeApplications(apps: Application[]) {
   }
 }
 
+function toStatusLog(log: StoredApplicationStatusLog): ApplicationStatusLog {
+  return {
+    ...log,
+    changed_at: new Date(log.changed_at),
+    created_at: new Date(log.created_at),
+  };
+}
+
+function toStoredStatusLog(log: ApplicationStatusLog): StoredApplicationStatusLog {
+  return {
+    ...log,
+    changed_at: log.changed_at.toISOString(),
+    created_at: log.created_at.toISOString(),
+  };
+}
+
+function readStatusLogs(): ApplicationStatusLog[] {
+  if (!canUseStorage()) {
+    return [];
+  }
+
+  const stored = window.localStorage.getItem(statusLogsStorageKey);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    return (JSON.parse(stored) as StoredApplicationStatusLog[]).map(toStatusLog);
+  } catch {
+    return [];
+  }
+}
+
+function writeStatusLogs(logs: ApplicationStatusLog[]) {
+  if (canUseStorage()) {
+    window.localStorage.setItem(
+      statusLogsStorageKey,
+      JSON.stringify(logs.map(toStoredStatusLog))
+    );
+  }
+}
+
 function cleanApplicationInput(input: ApplicationInput) {
   const companyName = input.companyName.trim();
   const jobTitle = input.jobTitle.trim();
@@ -102,6 +151,23 @@ export function listApplications(userId: number): Application[] {
     .sort((a, b) => b.applied_date.localeCompare(a.applied_date));
 }
 
+export function listApplicationStatusLogs(
+  applicationId: number,
+  userId: number
+): ApplicationStatusLog[] {
+  const application = readApplications().find(
+    (app) => app.id === applicationId && app.user_id === userId
+  );
+
+  if (!application) {
+    return [];
+  }
+
+  return readStatusLogs()
+    .filter((log) => log.application_id === applicationId)
+    .sort((a, b) => b.changed_at.getTime() - a.changed_at.getTime());
+}
+
 export function createApplication(input: ApplicationInput): Application {
   const values = cleanApplicationInput(input);
   const stored = readApplications();
@@ -124,6 +190,17 @@ export function createApplication(input: ApplicationInput): Application {
   };
 
   writeApplications([...stored, application]);
+  writeStatusLogs([
+    ...readStatusLogs(),
+    {
+      id: Date.now() + 1,
+      application_id: application.id,
+      status: values.status,
+      changed_at: now,
+      notes: 'Initial status',
+      created_at: now,
+    },
+  ]);
 
   return application;
 }
@@ -151,10 +228,27 @@ export function updateApplication(input: UpdateApplicationInput): Application {
 
   writeApplications(stored.map((app) => (app.id === updated.id ? updated : app)));
 
+  if (existing.current_status !== values.status) {
+    const now = new Date();
+
+    writeStatusLogs([
+      ...readStatusLogs(),
+      {
+        id: Date.now() + 1,
+        application_id: updated.id,
+        status: values.status,
+        changed_at: now,
+        notes: `Status changed from ${existing.current_status} to ${values.status}`,
+        created_at: now,
+      },
+    ]);
+  }
+
   return updated;
 }
 
 export function deleteApplication(id: number, userId: number): void {
   const stored = readApplications();
   writeApplications(stored.filter((app) => !(app.id === id && app.user_id === userId)));
+  writeStatusLogs(readStatusLogs().filter((log) => log.application_id !== id));
 }

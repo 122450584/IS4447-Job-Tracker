@@ -35,11 +35,20 @@ function todayString() {
 export function ApplicationManager({ userId }: ApplicationManagerProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { addApplication, applications, editApplication, error, isLoading, removeApplication } =
-    useApplications(userId);
+  const {
+    addApplication,
+    applications,
+    editApplication,
+    error,
+    isLoading,
+    loadStatusLogs,
+    removeApplication,
+    statusLogsByApplicationId,
+  } = useApplications(userId);
   const { categories } = useCategories(userId);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [appliedDate, setAppliedDate] = useState(todayString());
@@ -58,6 +67,16 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
     setCategoryId(categories[0]?.id ?? null);
     setStatus('not_applied');
     setNotes('');
+  }
+
+  function toggleDetails(application: Application) {
+    if (selectedApplicationId === application.id) {
+      setSelectedApplicationId(null);
+      return;
+    }
+
+    setSelectedApplicationId(application.id);
+    loadStatusLogs(application.id);
   }
 
   function startAdding() {
@@ -114,8 +133,10 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
           status,
           notes: notes || null,
         });
+
+        loadStatusLogs(editingId);
       } else {
-        await addApplication({
+        const application = await addApplication({
           categoryId,
           companyName,
           jobTitle,
@@ -123,6 +144,9 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
           status,
           notes: notes || null,
         });
+
+        setSelectedApplicationId(application.id);
+        loadStatusLogs(application.id);
       }
 
       resetForm();
@@ -292,48 +316,113 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
           <View style={styles.list}>
             {applications.map((application) => {
               const category = categories.find((c) => c.id === application.category_id);
+              const isSelected = selectedApplicationId === application.id;
+              const statusLogs = statusLogsByApplicationId[application.id] ?? [];
+
               return (
-                <View key={application.id} style={[styles.row, { borderColor: colors.border }]}>
-                  {category ? (
-                    <View style={[styles.categoryBadge, { backgroundColor: category.color }]}>
-                      <MaterialIcons
-                        color={Colors.dark.text}
-                        name={category.icon as CategoryIconName}
-                        size={18}
-                      />
+                <View
+                  key={application.id}
+                  style={[styles.applicationItem, { borderColor: colors.border }]}>
+                  <View style={styles.row}>
+                    {category ? (
+                      <View style={[styles.categoryBadge, { backgroundColor: category.color }]}>
+                        <MaterialIcons
+                          color={Colors.dark.text}
+                          name={category.icon as CategoryIconName}
+                          size={18}
+                        />
+                      </View>
+                    ) : null}
+
+                    <Pressable
+                      accessibilityLabel={`View status history for ${application.job_title} at ${application.company_name}`}
+                      accessibilityRole="button"
+                      onPress={() => toggleDetails(application)}
+                      style={styles.rowText}>
+                      <ThemedText type="defaultSemiBold">{application.company_name}</ThemedText>
+                      <ThemedText>{application.job_title}</ThemedText>
+                      <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                        {application.applied_date} · {statusLabels[application.current_status]}
+                      </ThemedText>
+                    </Pressable>
+
+                    <View style={styles.rowActions}>
+                      <Pressable
+                        accessibilityLabel={`${isSelected ? 'Hide' : 'View'} ${application.job_title} status history`}
+                        accessibilityRole="button"
+                        onPress={() => toggleDetails(application)}
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                        ]}>
+                        <MaterialIcons
+                          color={colors.text}
+                          name={isSelected ? 'expand-less' : 'expand-more'}
+                          size={18}
+                        />
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={`Edit ${application.job_title} at ${application.company_name}`}
+                        accessibilityRole="button"
+                        onPress={() => startEditing(application)}
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                        ]}>
+                        <MaterialIcons color={colors.text} name="edit" size={18} />
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={`Delete ${application.job_title} at ${application.company_name}`}
+                        accessibilityRole="button"
+                        onPress={() => confirmDelete(application)}
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                        ]}>
+                        <MaterialIcons color={colors.danger} name="delete" size={18} />
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  {isSelected ? (
+                    <View style={styles.detail}>
+                      <View style={styles.detailRow}>
+                        <ThemedText type="defaultSemiBold">Category</ThemedText>
+                        <ThemedText>{category?.name ?? 'Unknown category'}</ThemedText>
+                      </View>
+
+                      {application.notes ? (
+                        <View style={styles.detailRow}>
+                          <ThemedText type="defaultSemiBold">Notes</ThemedText>
+                          <ThemedText>{application.notes}</ThemedText>
+                        </View>
+                      ) : null}
+
+                      <View style={styles.timeline}>
+                        <ThemedText type="defaultSemiBold">Status history</ThemedText>
+                        {statusLogs.length === 0 ? (
+                          <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                            No status changes recorded yet.
+                          </ThemedText>
+                        ) : (
+                          statusLogs.map((log) => (
+                            <View key={log.id} style={styles.timelineItem}>
+                              <View style={[styles.timelineDot, { backgroundColor: colors.tint }]} />
+                              <View style={styles.timelineText}>
+                                <ThemedText type="defaultSemiBold">
+                                  {statusLabels[log.status]}
+                                </ThemedText>
+                                <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                                  {log.changed_at.toLocaleDateString()}
+                                </ThemedText>
+                                {log.notes ? <ThemedText>{log.notes}</ThemedText> : null}
+                              </View>
+                            </View>
+                          ))
+                        )}
+                      </View>
                     </View>
                   ) : null}
-
-                  <View style={styles.rowText}>
-                    <ThemedText type="defaultSemiBold">{application.company_name}</ThemedText>
-                    <ThemedText>{application.job_title}</ThemedText>
-                    <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
-                      {application.applied_date} · {statusLabels[application.current_status]}
-                    </ThemedText>
-                  </View>
-
-                  <View style={styles.rowActions}>
-                    <Pressable
-                      accessibilityLabel={`Edit ${application.job_title} at ${application.company_name}`}
-                      accessibilityRole="button"
-                      onPress={() => startEditing(application)}
-                      style={({ pressed }) => [
-                        styles.iconButton,
-                        { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
-                      ]}>
-                      <MaterialIcons color={colors.text} name="edit" size={18} />
-                    </Pressable>
-                    <Pressable
-                      accessibilityLabel={`Delete ${application.job_title} at ${application.company_name}`}
-                      accessibilityRole="button"
-                      onPress={() => confirmDelete(application)}
-                      style={({ pressed }) => [
-                        styles.iconButton,
-                        { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
-                      ]}>
-                      <MaterialIcons color={colors.danger} name="delete" size={18} />
-                    </Pressable>
-                  </View>
                 </View>
               );
             })}
@@ -364,9 +453,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
+  applicationItem: {
+    borderBottomWidth: 1,
+    gap: Spacing.md,
+    paddingBottom: Spacing.md,
+  },
   chipLabel: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  detail: {
+    gap: Spacing.md,
+    paddingLeft: 52,
+  },
+  detailRow: {
+    gap: Spacing.xs,
   },
   chipRow: {
     flexDirection: 'row',
@@ -393,10 +494,8 @@ const styles = StyleSheet.create({
   },
   row: {
     alignItems: 'center',
-    borderBottomWidth: 1,
     flexDirection: 'row',
     gap: Spacing.md,
-    paddingBottom: Spacing.md,
   },
   rowActions: {
     flexDirection: 'row',
@@ -412,5 +511,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+  },
+  timeline: {
+    gap: Spacing.sm,
+  },
+  timelineDot: {
+    borderRadius: 5,
+    height: 10,
+    marginTop: 6,
+    width: 10,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  timelineText: {
+    flex: 1,
+    gap: Spacing.xs,
   },
 });

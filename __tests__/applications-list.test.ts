@@ -74,7 +74,22 @@ jest.mock('@/db/client', () => {
     };
   }
 
-  const mockDb = {
+  type MockDb = {
+    select: () => {
+      from: (table: unknown) => {
+        where: () => {
+          get: () => Record<string, unknown> | undefined;
+          orderBy: () => {
+            all: () => Record<string, unknown>[];
+          };
+        };
+      };
+    };
+    insert: typeof createInsertBuilder;
+    transaction: <T>(callback: (tx: MockDb) => T) => T;
+  };
+
+  const mockDb: MockDb = {
     select() {
       return {
         from(table: unknown) {
