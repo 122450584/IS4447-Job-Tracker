@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { type Application, type ApplicationStatus, applicationStatuses } from '@/db/schema';
@@ -55,8 +55,35 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [status, setStatus] = useState<ApplicationStatus>('not_applied');
   const [notes, setNotes] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [startDateFilter, setStartDateFilter] = useState('');
+  const [endDateFilter, setEndDateFilter] = useState('');
+  const [categoryFilterId, setCategoryFilterId] = useState<number | null>(null);
 
   const isEditing = editingId !== null;
+  const hasFilters =
+    searchText.trim().length > 0 ||
+    startDateFilter.trim().length > 0 ||
+    endDateFilter.trim().length > 0 ||
+    categoryFilterId !== null;
+  const filteredApplications = useMemo(() => {
+    const query = searchText.trim().toLowerCase();
+    const startDate = startDateFilter.trim();
+    const endDate = endDateFilter.trim();
+
+    return applications.filter((application) => {
+      const matchesText =
+        !query ||
+        application.company_name.toLowerCase().includes(query) ||
+        application.job_title.toLowerCase().includes(query) ||
+        application.notes?.toLowerCase().includes(query);
+      const matchesCategory = !categoryFilterId || application.category_id === categoryFilterId;
+      const matchesStartDate = !startDate || application.applied_date >= startDate;
+      const matchesEndDate = !endDate || application.applied_date <= endDate;
+
+      return matchesText && matchesCategory && matchesStartDate && matchesEndDate;
+    });
+  }, [applications, categoryFilterId, endDateFilter, searchText, startDateFilter]);
 
   function resetForm() {
     setEditingId(null);
@@ -67,6 +94,13 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
     setCategoryId(categories[0]?.id ?? null);
     setStatus('not_applied');
     setNotes('');
+  }
+
+  function clearFilters() {
+    setSearchText('');
+    setStartDateFilter('');
+    setEndDateFilter('');
+    setCategoryFilterId(null);
   }
 
   function toggleDetails(application: Application) {
@@ -311,10 +345,112 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
           message="Add your first job application using the button above."
         />
       ) : (
-        <AppCard>
-          <ThemedText type="subtitle">Applications</ThemedText>
+        <>
+          <AppCard>
+            <ThemedText type="subtitle">Search and filter</ThemedText>
+
+            <View style={styles.form}>
+              <FormField
+                autoCapitalize="none"
+                label="Search"
+                onChangeText={setSearchText}
+                placeholder="Company, role, or notes"
+                value={searchText}
+              />
+
+              <View style={styles.dateFilters}>
+                <FormField
+                  label="From date"
+                  onChangeText={setStartDateFilter}
+                  placeholder="YYYY-MM-DD"
+                  value={startDateFilter}
+                  style={styles.dateInput}
+                />
+                <FormField
+                  label="To date"
+                  onChangeText={setEndDateFilter}
+                  placeholder="YYYY-MM-DD"
+                  value={endDateFilter}
+                  style={styles.dateInput}
+                />
+              </View>
+
+              <View style={styles.optionGroup}>
+                <ThemedText type="defaultSemiBold">Category</ThemedText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.chipRow}>
+                    <Pressable
+                      accessibilityLabel="Show all categories"
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: categoryFilterId === null }}
+                      onPress={() => setCategoryFilterId(null)}
+                      style={[
+                        styles.statusChip,
+                        {
+                          backgroundColor: categoryFilterId === null ? colors.tint : colors.surface,
+                          borderColor: categoryFilterId === null ? colors.tint : colors.border,
+                        },
+                      ]}>
+                      <ThemedText
+                        style={[
+                          styles.chipLabel,
+                          { color: categoryFilterId === null ? Colors.dark.text : colors.text },
+                        ]}>
+                        All
+                      </ThemedText>
+                    </Pressable>
+
+                    {categories.map((category) => {
+                      const selected = category.id === categoryFilterId;
+
+                      return (
+                        <Pressable
+                          accessibilityLabel={`Filter by ${category.name}`}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected }}
+                          key={category.id}
+                          onPress={() => setCategoryFilterId(category.id)}
+                          style={[
+                            styles.categoryChip,
+                            {
+                              backgroundColor: selected ? category.color : colors.surface,
+                              borderColor: selected ? category.color : colors.border,
+                            },
+                          ]}>
+                          <MaterialIcons
+                            color={selected ? Colors.dark.text : colors.text}
+                            name={category.icon as CategoryIconName}
+                            size={16}
+                          />
+                          <ThemedText
+                            style={[
+                              styles.chipLabel,
+                              { color: selected ? Colors.dark.text : colors.text },
+                            ]}>
+                            {category.name}
+                          </ThemedText>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+
+              {hasFilters ? (
+                <AppButton onPress={clearFilters} title="Clear filters" variant="secondary" />
+              ) : null}
+            </View>
+          </AppCard>
+
+          <AppCard>
+          <ThemedText type="subtitle">
+            Applications ({filteredApplications.length} of {applications.length})
+          </ThemedText>
+          {filteredApplications.length === 0 ? (
+            <ThemedText>No applications match the current filters.</ThemedText>
+          ) : null}
           <View style={styles.list}>
-            {applications.map((application) => {
+            {filteredApplications.map((application) => {
               const category = categories.find((c) => c.id === application.category_id);
               const isSelected = selectedApplicationId === application.id;
               const statusLogs = statusLogsByApplicationId[application.id] ?? [];
@@ -342,7 +478,7 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
                       <ThemedText type="defaultSemiBold">{application.company_name}</ThemedText>
                       <ThemedText>{application.job_title}</ThemedText>
                       <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
-                        {application.applied_date} · {statusLabels[application.current_status]}
+                        {application.applied_date} - {statusLabels[application.current_status]}
                       </ThemedText>
                     </Pressable>
 
@@ -428,6 +564,7 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
             })}
           </View>
         </AppCard>
+        </>
       )}
     </>
   );
@@ -468,6 +605,12 @@ const styles = StyleSheet.create({
   },
   detailRow: {
     gap: Spacing.xs,
+  },
+  dateFilters: {
+    gap: Spacing.md,
+  },
+  dateInput: {
+    minWidth: 140,
   },
   chipRow: {
     flexDirection: 'row',
