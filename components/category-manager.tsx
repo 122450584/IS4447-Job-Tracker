@@ -8,6 +8,7 @@ import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppButton } from './app-button';
 import { AppCard } from './app-card';
+import { ErrorMessage } from './error-message';
 import { FormField } from './form-field';
 import { ThemedText } from './themed-text';
 
@@ -152,11 +153,7 @@ export function CategoryManager({ userId }: CategoryManagerProps) {
           </View>
         </View>
 
-        {error ? (
-          <ThemedText lightColor={Colors.light.danger} darkColor={Colors.dark.danger}>
-            {error}
-          </ThemedText>
-        ) : null}
+        {error ? <ErrorMessage message={error} /> : null}
 
         <View style={styles.actions}>
           <AppButton

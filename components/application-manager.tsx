@@ -10,6 +10,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppButton } from './app-button';
 import { AppCard } from './app-card';
 import { EmptyState } from './empty-state';
+import { ErrorMessage } from './error-message';
 import { FormField } from './form-field';
 import { ThemedText } from './themed-text';
 
@@ -308,11 +309,7 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
             />
           </View>
 
-          {error ? (
-            <ThemedText lightColor={Colors.light.danger} darkColor={Colors.dark.danger}>
-              {error}
-            </ThemedText>
-          ) : null}
+          {error ? <ErrorMessage message={error} /> : null}
 
           <View style={styles.actions}>
             <AppButton
@@ -333,11 +330,7 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
         <AppButton onPress={startAdding} title="Add application" />
       )}
 
-      {!showForm && error ? (
-        <ThemedText lightColor={Colors.light.danger} darkColor={Colors.dark.danger}>
-          {error}
-        </ThemedText>
-      ) : null}
+      {!showForm && error ? <ErrorMessage message={error} /> : null}
 
       {applications.length === 0 ? (
         <EmptyState

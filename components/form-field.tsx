@@ -14,6 +14,7 @@ export function FormField({
   label,
   error,
   helperText,
+  accessibilityHint,
   accessibilityLabel,
   style,
   ...rest
@@ -26,6 +27,7 @@ export function FormField({
     <View style={styles.container}>
       <ThemedText type="defaultSemiBold">{label}</ThemedText>
       <TextInput
+        accessibilityHint={accessibilityHint ?? message}
         accessibilityLabel={accessibilityLabel ?? label}
         placeholderTextColor={colors.muted}
         style={[

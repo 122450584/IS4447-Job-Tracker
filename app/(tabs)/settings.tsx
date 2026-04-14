@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 
 import { AppCard } from '@/components/app-card';
 import { AppButton } from '@/components/app-button';
 import { AppScreen } from '@/components/app-screen';
 import { CategoryManager } from '@/components/category-manager';
+import { ErrorMessage } from '@/components/error-message';
 import { FormField } from '@/components/form-field';
 import { ThemedText } from '@/components/themed-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 
 type AuthMode = 'login' | 'register';
@@ -36,9 +37,18 @@ export default function SettingsScreen() {
   }
 
   function handleDeleteProfile() {
+    const message = 'This removes the local profile and related data from this device.';
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(message)) {
+        removeProfile();
+      }
+      return;
+    }
+
     Alert.alert(
       'Delete profile',
-      'This removes the local profile and related data from this device.',
+      message,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -113,11 +123,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {error ? (
-          <ThemedText lightColor={Colors.light.danger} darkColor={Colors.dark.danger}>
-            {error}
-          </ThemedText>
-        ) : null}
+        {error ? <ErrorMessage message={error} /> : null}
 
         <View style={styles.actions}>
           <AppButton
