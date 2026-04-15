@@ -12,6 +12,7 @@ import { type ThemePreference } from '@/db/schema';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useCsvExport } from '@/hooks/use-csv-export';
 import { useThemePreference } from '@/hooks/use-theme-preference';
 
 type AuthMode = 'login' | 'register';
@@ -31,6 +32,12 @@ export default function SettingsScreen() {
     error: themeError,
     preference: themePreference,
   } = useThemePreference(user?.id);
+  const {
+    error: exportError,
+    exportCsv,
+    isExporting,
+    lastExport,
+  } = useCsvExport(user?.id);
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -88,6 +95,25 @@ export default function SettingsScreen() {
         <AppCard>
           <ThemedText type="subtitle">Privacy</ThemedText>
           <ThemedText>Job application data stays local on this device by default.</ThemedText>
+        </AppCard>
+
+        <AppCard>
+          <ThemedText type="subtitle">Data export</ThemedText>
+          <ThemedText>
+            Download your stored job applications as a CSV file for your own records.
+          </ThemedText>
+          <AppButton
+            loading={isExporting}
+            onPress={exportCsv}
+            title="Export CSV"
+            variant="secondary"
+          />
+          {lastExport ? (
+            <ThemedText>
+              Exported {lastExport.recordCount} applications to {lastExport.fileName}.
+            </ThemedText>
+          ) : null}
+          {exportError ? <ErrorMessage message={exportError} /> : null}
         </AppCard>
 
         <AppCard>
