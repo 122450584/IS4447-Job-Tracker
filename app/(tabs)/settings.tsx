@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppCard } from '@/components/app-card';
 import { AppButton } from '@/components/app-button';
@@ -8,13 +8,29 @@ import { CategoryManager } from '@/components/category-manager';
 import { ErrorMessage } from '@/components/error-message';
 import { FormField } from '@/components/form-field';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { type ThemePreference } from '@/db/schema';
+import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemePreference } from '@/hooks/use-theme-preference';
 
 type AuthMode = 'login' | 'register';
 
+const themeOptions: { label: string; value: ThemePreference }[] = [
+  { label: 'System', value: 'system' },
+  { label: 'Light', value: 'light' },
+  { label: 'Dark', value: 'dark' },
+];
+
 export default function SettingsScreen() {
   const { error, isLoading, login, logout, register, removeProfile, user } = useAuth();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const {
+    changePreference,
+    error: themeError,
+    preference: themePreference,
+  } = useThemePreference(user?.id);
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -72,6 +88,40 @@ export default function SettingsScreen() {
         <AppCard>
           <ThemedText type="subtitle">Privacy</ThemedText>
           <ThemedText>Job application data stays local on this device by default.</ThemedText>
+        </AppCard>
+
+        <AppCard>
+          <ThemedText type="subtitle">Appearance</ThemedText>
+          <View style={styles.optionRow}>
+            {themeOptions.map((option) => {
+              const selected = option.value === themePreference;
+
+              return (
+                <Pressable
+                  accessibilityLabel={`Use ${option.label.toLowerCase()} appearance`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  key={option.value}
+                  onPress={() => changePreference(option.value)}
+                  style={[
+                    styles.optionButton,
+                    {
+                      backgroundColor: selected ? colors.tint : colors.surface,
+                      borderColor: selected ? colors.tint : colors.border,
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.optionText,
+                      { color: selected ? Colors.dark.text : colors.text },
+                    ]}>
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+          {themeError ? <ErrorMessage message={themeError} /> : null}
         </AppCard>
 
         <CategoryManager userId={user.id} />
@@ -162,5 +212,24 @@ const styles = StyleSheet.create({
   form: {
     gap: Spacing.lg,
     paddingTop: Spacing.sm,
+  },
+  optionButton: {
+    alignItems: 'center',
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    flex: 1,
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  optionText: {
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
