@@ -1,4 +1,8 @@
 import { type Application, type PeriodType, type Target } from '@/db/schema';
+import {
+  buildTargetStreakSummary,
+  type TargetStreakSummary,
+} from '@/services/target-streak-utils';
 
 export type TargetInput = {
   userId: number;
@@ -165,6 +169,10 @@ export function listTargetProgress(userId: number): TargetProgress[] {
     .filter((target) => target.user_id === userId)
     .sort((firstTarget, secondTarget) => secondTarget.start_date.localeCompare(firstTarget.start_date))
     .map(calculateProgress);
+}
+
+export function getTargetStreakSummary(userId: number): TargetStreakSummary {
+  return buildTargetStreakSummary(listTargetProgress(userId));
 }
 
 export function createTarget(input: TargetInput): TargetProgress {

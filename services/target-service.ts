@@ -3,6 +3,10 @@ import { and, desc, eq } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { initializeDatabase } from '@/db/init';
 import { type PeriodType, type Target, applications, targets } from '@/db/schema';
+import {
+  buildTargetStreakSummary,
+  type TargetStreakSummary,
+} from '@/services/target-streak-utils';
 
 export type TargetInput = {
   userId: number;
@@ -105,6 +109,12 @@ export function listTargetProgress(userId: number): TargetProgress[] {
     .all();
 
   return targetRows.map(calculateProgress);
+}
+
+export function getTargetStreakSummary(userId: number): TargetStreakSummary {
+  initializeDatabase();
+
+  return buildTargetStreakSummary(listTargetProgress(userId));
 }
 
 export function createTarget(input: TargetInput): TargetProgress {

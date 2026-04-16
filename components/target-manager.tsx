@@ -46,7 +46,15 @@ export function TargetManager({ userId }: TargetManagerProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const { categories } = useCategories(userId);
-  const { addTarget, editTarget, error, isLoading, removeTarget, targets } = useTargets(userId);
+  const {
+    addTarget,
+    editTarget,
+    error,
+    isLoading,
+    removeTarget,
+    streakSummary,
+    targets,
+  } = useTargets(userId);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -272,6 +280,46 @@ export function TargetManager({ userId }: TargetManagerProps) {
 
       {!showForm && error ? <ErrorMessage message={error} /> : null}
 
+      {targets.length > 0 ? (
+        <AppCard>
+          <View style={styles.streakHeader}>
+            <View>
+              <ThemedText type="subtitle">Target streaks</ThemedText>
+              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                Consecutive completed periods where targets were met.
+              </ThemedText>
+            </View>
+            <MaterialIcons color={colors.tint} name="local-fire-department" size={28} />
+          </View>
+
+          <View style={styles.streakGrid}>
+            <View style={styles.streakItem}>
+              <ThemedText style={styles.streakValue}>
+                {streakSummary.weekly.currentStreak}
+              </ThemedText>
+              <ThemedText type="defaultSemiBold">Weekly streak</ThemedText>
+              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                {streakSummary.weekly.trackedPeriods === 0
+                  ? 'No completed weekly targets'
+                  : `${streakSummary.weekly.metPeriods} of ${streakSummary.weekly.trackedPeriods} met`}
+              </ThemedText>
+            </View>
+
+            <View style={styles.streakItem}>
+              <ThemedText style={styles.streakValue}>
+                {streakSummary.monthly.currentStreak}
+              </ThemedText>
+              <ThemedText type="defaultSemiBold">Monthly streak</ThemedText>
+              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                {streakSummary.monthly.trackedPeriods === 0
+                  ? 'No completed monthly targets'
+                  : `${streakSummary.monthly.metPeriods} of ${streakSummary.monthly.trackedPeriods} met`}
+              </ThemedText>
+            </View>
+          </View>
+        </AppCard>
+      ) : null}
+
       {targets.length === 0 ? (
         <EmptyState
           title="No targets set"
@@ -415,6 +463,27 @@ const styles = StyleSheet.create({
     borderRadius: Radius.sm,
     height: 10,
     overflow: 'hidden',
+  },
+  streakGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+  },
+  streakHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.md,
+    justifyContent: 'space-between',
+  },
+  streakItem: {
+    flex: 1,
+    gap: Spacing.xs,
+    minWidth: 140,
+  },
+  streakValue: {
+    fontSize: 32,
+    fontWeight: '800',
+    lineHeight: 38,
   },
   targetActions: {
     flexDirection: 'row',

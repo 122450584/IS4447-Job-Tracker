@@ -3,21 +3,40 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   createTarget,
   deleteTarget,
+  getTargetStreakSummary,
   listTargetProgress,
   type TargetInput,
   type TargetProgress,
   updateTarget,
   type UpdateTargetInput,
 } from '@/services/target-service';
+import { type TargetStreakSummary } from '@/services/target-streak-utils';
+
+const emptyStreakSummary: TargetStreakSummary = {
+  weekly: {
+    currentStreak: 0,
+    lastCompletedPeriod: null,
+    metPeriods: 0,
+    trackedPeriods: 0,
+  },
+  monthly: {
+    currentStreak: 0,
+    lastCompletedPeriod: null,
+    metPeriods: 0,
+    trackedPeriods: 0,
+  },
+};
 
 export function useTargets(userId: number | null | undefined) {
   const [targets, setTargets] = useState<TargetProgress[]>([]);
+  const [streakSummary, setStreakSummary] = useState<TargetStreakSummary>(emptyStreakSummary);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const reloadTargets = useCallback(() => {
     if (!userId) {
       setTargets([]);
+      setStreakSummary(emptyStreakSummary);
       return;
     }
 
@@ -26,6 +45,7 @@ export function useTargets(userId: number | null | undefined) {
 
     try {
       setTargets(listTargetProgress(userId));
+      setStreakSummary(getTargetStreakSummary(userId));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Targets could not be loaded.';
       setError(message);
@@ -50,6 +70,7 @@ export function useTargets(userId: number | null | undefined) {
       try {
         const target = createTarget({ ...input, userId });
         setTargets(listTargetProgress(userId));
+        setStreakSummary(getTargetStreakSummary(userId));
         return target;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Target could not be created.';
@@ -74,6 +95,7 @@ export function useTargets(userId: number | null | undefined) {
       try {
         const target = updateTarget({ ...input, userId });
         setTargets(listTargetProgress(userId));
+        setStreakSummary(getTargetStreakSummary(userId));
         return target;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Target could not be updated.';
@@ -97,6 +119,7 @@ export function useTargets(userId: number | null | undefined) {
       try {
         deleteTarget(id, userId);
         setTargets(listTargetProgress(userId));
+        setStreakSummary(getTargetStreakSummary(userId));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Target could not be deleted.';
         setError(message);
@@ -112,6 +135,7 @@ export function useTargets(userId: number | null | undefined) {
     isLoading,
     reloadTargets,
     removeTarget,
+    streakSummary,
     targets,
   };
 }
