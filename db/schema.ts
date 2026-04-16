@@ -133,10 +133,14 @@ export const settings = sqliteTable(
     theme_preference: text('theme_preference', { enum: themePreferences })
       .notNull()
       .default('system'),
+    daily_reminder_enabled: integer('daily_reminder_enabled').notNull().default(0),
+    daily_reminder_time: text('daily_reminder_time').notNull().default('09:00'),
+    daily_reminder_notification_id: text('daily_reminder_notification_id'),
   },
   (table) => [
     uniqueIndex('settings_user_id_unique').on(table.user_id),
     check('settings_theme_preference_check', sql`${table.theme_preference} in ('system', 'light', 'dark')`),
+    check('settings_daily_reminder_enabled_check', sql`${table.daily_reminder_enabled} in (0, 1)`),
   ]
 );
 

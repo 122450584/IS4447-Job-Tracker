@@ -5,6 +5,7 @@ import { AppCard } from '@/components/app-card';
 import { AppButton } from '@/components/app-button';
 import { AppScreen } from '@/components/app-screen';
 import { CategoryManager } from '@/components/category-manager';
+import { DailyReminderSettings } from '@/components/daily-reminder-settings';
 import { ErrorMessage } from '@/components/error-message';
 import { FormField } from '@/components/form-field';
 import { ThemedText } from '@/components/themed-text';
@@ -14,6 +15,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useCsvExport } from '@/hooks/use-csv-export';
 import { useThemePreference } from '@/hooks/use-theme-preference';
+import { cancelDailyApplicationReminder } from '@/services/notification-service';
+import { getDailyReminderSettings } from '@/services/settings-service';
 
 type AuthMode = 'login' | 'register';
 
@@ -64,7 +67,7 @@ export default function SettingsScreen() {
 
     if (Platform.OS === 'web') {
       if (window.confirm(message)) {
-        removeProfile();
+        void handleConfirmedDeleteProfile();
       }
       return;
     }
@@ -77,10 +80,25 @@ export default function SettingsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: removeProfile,
+          onPress: () => {
+            void handleConfirmedDeleteProfile();
+          },
         },
       ]
     );
+  }
+
+  async function handleConfirmedDeleteProfile() {
+    if (!user) {
+      return;
+    }
+
+    try {
+      const reminderSettings = getDailyReminderSettings(user.id);
+      await cancelDailyApplicationReminder(reminderSettings.notificationId);
+    } finally {
+      removeProfile();
+    }
   }
 
   if (user) {
@@ -115,6 +133,8 @@ export default function SettingsScreen() {
           ) : null}
           {exportError ? <ErrorMessage message={exportError} /> : null}
         </AppCard>
+
+        <DailyReminderSettings userId={user.id} />
 
         <AppCard>
           <ThemedText type="subtitle">Appearance</ThemedText>

@@ -1,5 +1,41 @@
 import { sqliteClient } from './client';
 
+type CountRow = {
+  count: number;
+};
+
+type TableColumn = {
+  name: string;
+};
+
+function addColumnIfMissing(tableName: string, columnName: string, columnDefinition: string) {
+  if ('getAllSync' in sqliteClient && typeof sqliteClient.getAllSync === 'function') {
+    const columns = sqliteClient.getAllSync<TableColumn>(`PRAGMA table_info(${tableName})`);
+    const columnExists = columns.some((column) => column.name === columnName);
+
+    if (!columnExists) {
+      sqliteClient.execSync(`ALTER TABLE ${tableName} ADD COLUMN ${columnDefinition}`);
+    }
+
+    return;
+  }
+
+  let columnExists = false;
+
+  try {
+    const row = sqliteClient.getFirstSync<CountRow>(
+      `SELECT COUNT(*) AS count FROM pragma_table_info('${tableName}') WHERE name = '${columnName}'`
+    );
+    columnExists = (row?.count ?? 0) > 0;
+  } catch {
+    columnExists = false;
+  }
+
+  if (!columnExists) {
+    sqliteClient.execSync(`ALTER TABLE ${tableName} ADD COLUMN ${columnDefinition}`);
+  }
+}
+
 export function initializeDatabase() {
   sqliteClient.execSync(`
     PRAGMA foreign_keys = ON;
@@ -88,12 +124,33 @@ export function initializeDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       theme_preference TEXT NOT NULL DEFAULT 'system',
+      daily_reminder_enabled INTEGER NOT NULL DEFAULT 0,
+      daily_reminder_time TEXT NOT NULL DEFAULT '09:00',
+      daily_reminder_notification_id TEXT,
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
       CONSTRAINT settings_theme_preference_check
-        CHECK (theme_preference IN ('system', 'light', 'dark'))
+        CHECK (theme_preference IN ('system', 'light', 'dark')),
+      CONSTRAINT settings_daily_reminder_enabled_check
+        CHECK (daily_reminder_enabled IN (0, 1))
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS settings_user_id_unique
       ON settings (user_id);
   `);
+
+  addColumnIfMissing(
+    'settings',
+    'daily_reminder_enabled',
+    'daily_reminder_enabled INTEGER NOT NULL DEFAULT 0'
+  );
+  addColumnIfMissing(
+    'settings',
+    'daily_reminder_time',
+    "daily_reminder_time TEXT NOT NULL DEFAULT '09:00'"
+  );
+  addColumnIfMissing(
+    'settings',
+    'daily_reminder_notification_id',
+    'daily_reminder_notification_id TEXT'
+  );
 }

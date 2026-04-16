@@ -1,7 +1,14 @@
 import { type Settings, type ThemePreference, themePreferences } from '@/db/schema';
+import { isReminderTime } from '@/services/reminder-time';
 import { setStoredThemePreference } from '@/services/theme-preference-store';
 
 type StoredSettings = Omit<Settings, 'id'>;
+
+export type DailyReminderSettings = {
+  enabled: boolean;
+  time: string;
+  notificationId: string | null;
+};
 
 const settingsStorageKey = 'job_tracker_settings';
 
@@ -11,6 +18,27 @@ function canUseStorage() {
 
 function isThemePreference(value: string): value is ThemePreference {
   return themePreferences.includes(value as ThemePreference);
+}
+
+function normalizeSettings(setting: Partial<StoredSettings> & { user_id: number }): StoredSettings {
+  const themePreference = setting.theme_preference;
+  const reminderTime = setting.daily_reminder_time;
+
+  return {
+    user_id: setting.user_id,
+    theme_preference: themePreference && isThemePreference(themePreference) ? themePreference : 'system',
+    daily_reminder_enabled: setting.daily_reminder_enabled === 1 ? 1 : 0,
+    daily_reminder_time: reminderTime && isReminderTime(reminderTime) ? reminderTime : '09:00',
+    daily_reminder_notification_id: setting.daily_reminder_notification_id ?? null,
+  };
+}
+
+function toDailyReminderSettings(setting: StoredSettings): DailyReminderSettings {
+  return {
+    enabled: setting.daily_reminder_enabled === 1,
+    time: setting.daily_reminder_time,
+    notificationId: setting.daily_reminder_notification_id,
+  };
 }
 
 function readSettings(): StoredSettings[] {
@@ -25,7 +53,9 @@ function readSettings(): StoredSettings[] {
   }
 
   try {
-    return JSON.parse(stored) as StoredSettings[];
+    const parsed = JSON.parse(stored) as Array<Partial<StoredSettings> & { user_id: number }>;
+
+    return parsed.map(normalizeSettings);
   } catch {
     return [];
   }
@@ -44,7 +74,7 @@ export function getThemePreference(userId: number): ThemePreference {
   setStoredThemePreference(preference);
 
   if (!existing) {
-    writeSettings([...readSettings(), { user_id: userId, theme_preference: preference }]);
+    writeSettings([...readSettings(), normalizeSettings({ user_id: userId, theme_preference: preference })]);
   }
 
   return preference;
@@ -63,9 +93,51 @@ export function updateThemePreference(userId: number, preference: ThemePreferenc
       ? storedSettings.map((setting) =>
           setting.user_id === userId ? { ...setting, theme_preference: preference } : setting
         )
-      : [...storedSettings, { user_id: userId, theme_preference: preference }]
+      : [...storedSettings, normalizeSettings({ user_id: userId, theme_preference: preference })]
   );
   setStoredThemePreference(preference);
 
   return preference;
+}
+
+export function getDailyReminderSettings(userId: number): DailyReminderSettings {
+  const storedSettings = readSettings();
+  const existing = storedSettings.find((setting) => setting.user_id === userId);
+
+  if (existing) {
+    return toDailyReminderSettings(existing);
+  }
+
+  const nextSettings = normalizeSettings({ user_id: userId });
+
+  writeSettings([...storedSettings, nextSettings]);
+
+  return toDailyReminderSettings(nextSettings);
+}
+
+export function updateDailyReminderSettings(
+  userId: number,
+  nextReminderSettings: DailyReminderSettings
+): DailyReminderSettings {
+  if (!isReminderTime(nextReminderSettings.time)) {
+    throw new Error('Use a valid reminder time in HH:mm format.');
+  }
+
+  const storedSettings = readSettings();
+  const existing = storedSettings.some((setting) => setting.user_id === userId);
+  const nextStoredSettings = {
+    daily_reminder_enabled: nextReminderSettings.enabled ? 1 : 0,
+    daily_reminder_time: nextReminderSettings.time,
+    daily_reminder_notification_id: nextReminderSettings.notificationId,
+  };
+
+  writeSettings(
+    existing
+      ? storedSettings.map((setting) =>
+          setting.user_id === userId ? { ...setting, ...nextStoredSettings } : setting
+        )
+      : [...storedSettings, normalizeSettings({ user_id: userId, ...nextStoredSettings })]
+  );
+
+  return nextReminderSettings;
 }
