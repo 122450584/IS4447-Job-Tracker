@@ -18,6 +18,7 @@ const MAPPING = {
   'chart.bar.fill': 'bar-chart',
   'gearshape.fill': 'settings',
   'house.fill': 'home',
+  'magnifyingglass.circle.fill': 'travel-explore',
   target: 'track-changes',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
