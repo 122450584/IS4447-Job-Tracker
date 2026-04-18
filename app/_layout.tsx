@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { Colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemePreference } from '@/hooks/use-theme-preference';
@@ -14,16 +15,44 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { user } = useAuth();
+  const palette = Colors[colorScheme ?? 'light'];
 
   useThemePreference(user?.id);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      value={
+        colorScheme === 'dark'
+          ? {
+              ...DarkTheme,
+              colors: {
+                ...DarkTheme.colors,
+                background: palette.background,
+                card: palette.surface,
+                border: palette.border,
+                notification: palette.danger,
+                primary: palette.tint,
+                text: palette.text,
+              },
+            }
+          : {
+              ...DefaultTheme,
+              colors: {
+                ...DefaultTheme.colors,
+                background: palette.background,
+                card: palette.surface,
+                border: palette.border,
+                notification: palette.danger,
+                primary: palette.tint,
+                text: palette.text,
+              },
+            }
+      }>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );
 }

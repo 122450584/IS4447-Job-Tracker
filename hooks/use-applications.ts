@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { type Application, type ApplicationStatusLog } from '@/db/schema';
@@ -41,6 +42,12 @@ export function useApplications(userId: number | null | undefined) {
   useEffect(() => {
     reloadApplications();
   }, [reloadApplications]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadApplications();
+    }, [reloadApplications])
+  );
 
   const addApplication = useCallback(
     async (input: Omit<ApplicationInput, 'userId'>) => {

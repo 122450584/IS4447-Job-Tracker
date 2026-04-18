@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { type Category } from '@/db/schema';
@@ -36,6 +37,12 @@ export function useCategories(userId: number | null | undefined) {
   useEffect(() => {
     reloadCategories();
   }, [reloadCategories]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadCategories();
+    }, [reloadCategories])
+  );
 
   const addCategory = useCallback(
     async (input: Omit<CategoryInput, 'userId'>) => {

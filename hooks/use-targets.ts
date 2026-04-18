@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -57,6 +58,12 @@ export function useTargets(userId: number | null | undefined) {
   useEffect(() => {
     reloadTargets();
   }, [reloadTargets]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadTargets();
+    }, [reloadTargets])
+  );
 
   const addTarget = useCallback(
     async (input: Omit<TargetInput, 'userId'>) => {

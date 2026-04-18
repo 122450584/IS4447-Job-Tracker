@@ -21,9 +21,18 @@ function todayString() {
 }
 
 function buildPeriodStreak(rows: ProgressForStreak[], periodType: StreakPeriod): TargetStreak {
-  const completedRows = rows.filter(
-    (row) => row.target.period_type === periodType && row.target.end_date <= todayString()
-  );
+  const today = todayString();
+  const completedRows = rows.filter((row) => {
+    if (row.target.period_type !== periodType) {
+      return false;
+    }
+
+    const isCompletedPeriod = row.target.end_date <= today;
+    const isActiveMetPeriod =
+      row.target.start_date <= today && row.target.end_date >= today && row.state !== 'unmet';
+
+    return isCompletedPeriod || isActiveMetPeriod;
+  });
   const groupedPeriods = new Map<string, ProgressForStreak[]>();
 
   completedRows.forEach((row) => {

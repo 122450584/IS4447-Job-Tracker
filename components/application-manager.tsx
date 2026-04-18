@@ -60,6 +60,7 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
   const [startDateFilter, setStartDateFilter] = useState('');
   const [endDateFilter, setEndDateFilter] = useState('');
   const [categoryFilterId, setCategoryFilterId] = useState<number | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const isEditing = editingId !== null;
   const hasFilters =
@@ -67,6 +68,12 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
     startDateFilter.trim().length > 0 ||
     endDateFilter.trim().length > 0 ||
     categoryFilterId !== null;
+  const activeFilterCount = [
+    searchText.trim().length > 0,
+    startDateFilter.trim().length > 0,
+    endDateFilter.trim().length > 0,
+    categoryFilterId !== null,
+  ].filter(Boolean).length;
   const filteredApplications = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     const startDate = startDateFilter.trim();
@@ -340,99 +347,114 @@ export function ApplicationManager({ userId }: ApplicationManagerProps) {
       ) : (
         <>
           <AppCard>
-            <ThemedText type="subtitle">Search and filter</ThemedText>
-
-            <View style={styles.form}>
-              <FormField
-                autoCapitalize="none"
-                label="Search"
-                onChangeText={setSearchText}
-                placeholder="Company, role, or notes"
-                value={searchText}
+            <View style={styles.filterHeader}>
+              <ThemedText type="subtitle">Search and filter</ThemedText>
+              <AppButton
+                onPress={() => setShowFilters((current) => !current)}
+                title={showFilters ? 'Hide filters' : 'Show filters'}
+                variant="secondary"
               />
-
-              <View style={styles.dateFilters}>
-                <FormField
-                  label="From date"
-                  onChangeText={setStartDateFilter}
-                  placeholder="YYYY-MM-DD"
-                  value={startDateFilter}
-                  style={styles.dateInput}
-                />
-                <FormField
-                  label="To date"
-                  onChangeText={setEndDateFilter}
-                  placeholder="YYYY-MM-DD"
-                  value={endDateFilter}
-                  style={styles.dateInput}
-                />
-              </View>
-
-              <View style={styles.optionGroup}>
-                <ThemedText type="defaultSemiBold">Category</ThemedText>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.chipRow}>
-                    <Pressable
-                      accessibilityLabel="Show all categories"
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: categoryFilterId === null }}
-                      onPress={() => setCategoryFilterId(null)}
-                      style={[
-                        styles.statusChip,
-                        {
-                          backgroundColor: categoryFilterId === null ? colors.tint : colors.surface,
-                          borderColor: categoryFilterId === null ? colors.tint : colors.border,
-                        },
-                      ]}>
-                      <ThemedText
-                        style={[
-                          styles.chipLabel,
-                          { color: categoryFilterId === null ? Colors.dark.text : colors.text },
-                        ]}>
-                        All
-                      </ThemedText>
-                    </Pressable>
-
-                    {categories.map((category) => {
-                      const selected = category.id === categoryFilterId;
-
-                      return (
-                        <Pressable
-                          accessibilityLabel={`Filter by ${category.name}`}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          key={category.id}
-                          onPress={() => setCategoryFilterId(category.id)}
-                          style={[
-                            styles.categoryChip,
-                            {
-                              backgroundColor: selected ? category.color : colors.surface,
-                              borderColor: selected ? category.color : colors.border,
-                            },
-                          ]}>
-                          <MaterialIcons
-                            color={selected ? Colors.dark.text : colors.text}
-                            name={category.icon as CategoryIconName}
-                            size={16}
-                          />
-                          <ThemedText
-                            style={[
-                              styles.chipLabel,
-                              { color: selected ? Colors.dark.text : colors.text },
-                            ]}>
-                            {category.name}
-                          </ThemedText>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </ScrollView>
-              </View>
-
-              {hasFilters ? (
-                <AppButton onPress={clearFilters} title="Clear filters" variant="secondary" />
-              ) : null}
             </View>
+
+            {!showFilters ? (
+              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                {hasFilters
+                  ? `${activeFilterCount} active filter${activeFilterCount === 1 ? '' : 's'}`
+                  : 'No filters applied'}
+              </ThemedText>
+            ) : (
+              <View style={styles.form}>
+                <FormField
+                  autoCapitalize="none"
+                  label="Search"
+                  onChangeText={setSearchText}
+                  placeholder="Company, role, or notes"
+                  value={searchText}
+                />
+
+                <View style={styles.dateFilters}>
+                  <FormField
+                    label="From date"
+                    onChangeText={setStartDateFilter}
+                    placeholder="YYYY-MM-DD"
+                    value={startDateFilter}
+                    style={styles.dateInput}
+                  />
+                  <FormField
+                    label="To date"
+                    onChangeText={setEndDateFilter}
+                    placeholder="YYYY-MM-DD"
+                    value={endDateFilter}
+                    style={styles.dateInput}
+                  />
+                </View>
+
+                <View style={styles.optionGroup}>
+                  <ThemedText type="defaultSemiBold">Category</ThemedText>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={styles.chipRow}>
+                      <Pressable
+                        accessibilityLabel="Show all categories"
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: categoryFilterId === null }}
+                        onPress={() => setCategoryFilterId(null)}
+                        style={[
+                          styles.statusChip,
+                          {
+                            backgroundColor: categoryFilterId === null ? colors.tint : colors.surface,
+                            borderColor: categoryFilterId === null ? colors.tint : colors.border,
+                          },
+                        ]}>
+                        <ThemedText
+                          style={[
+                            styles.chipLabel,
+                            { color: categoryFilterId === null ? Colors.dark.text : colors.text },
+                          ]}>
+                          All
+                        </ThemedText>
+                      </Pressable>
+
+                      {categories.map((category) => {
+                        const selected = category.id === categoryFilterId;
+
+                        return (
+                          <Pressable
+                            accessibilityLabel={`Filter by ${category.name}`}
+                            accessibilityRole="button"
+                            accessibilityState={{ selected }}
+                            key={category.id}
+                            onPress={() => setCategoryFilterId(category.id)}
+                            style={[
+                              styles.categoryChip,
+                              {
+                                backgroundColor: selected ? category.color : colors.surface,
+                                borderColor: selected ? category.color : colors.border,
+                              },
+                            ]}>
+                            <MaterialIcons
+                              color={selected ? Colors.dark.text : colors.text}
+                              name={category.icon as CategoryIconName}
+                              size={16}
+                            />
+                            <ThemedText
+                              style={[
+                                styles.chipLabel,
+                                { color: selected ? Colors.dark.text : colors.text },
+                              ]}>
+                              {category.name}
+                            </ThemedText>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </ScrollView>
+                </View>
+
+                {hasFilters ? (
+                  <AppButton onPress={clearFilters} title="Clear filters" variant="secondary" />
+                ) : null}
+              </View>
+            )}
           </AppCard>
 
           <AppCard>
@@ -613,6 +635,12 @@ const styles = StyleSheet.create({
   form: {
     gap: Spacing.lg,
     paddingTop: Spacing.sm,
+  },
+  filterHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.md,
+    justifyContent: 'space-between',
   },
   iconButton: {
     alignItems: 'center',

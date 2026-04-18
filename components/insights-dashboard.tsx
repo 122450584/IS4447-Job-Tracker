@@ -50,7 +50,8 @@ export function InsightsDashboard({ userId, period, onPeriodChange }: InsightsDa
                 styles.segmentButton,
                 { backgroundColor: isSelected ? colors.tint : colors.surface },
               ]}>
-              <ThemedText style={[styles.segmentText, { color: isSelected ? '#FFFFFF' : colors.text }]}>
+              <ThemedText
+                style={[styles.segmentText, { color: isSelected ? Colors.dark.text : colors.text }]}>
                 {option.label}
               </ThemedText>
             </Pressable>

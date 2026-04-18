@@ -187,8 +187,10 @@ export function CategoryManager({ userId }: CategoryManagerProps) {
                 </View>
 
                 <View style={styles.categoryText}>
-                  <ThemedText type="defaultSemiBold">{category.name}</ThemedText>
-                  <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
+                  <ThemedText type="defaultSemiBold" style={{ color: colors.text }}>
+                    {category.name}
+                  </ThemedText>
+                  <ThemedText style={{ color: colors.text }}>
                     {category.color}
                   </ThemedText>
                 </View>

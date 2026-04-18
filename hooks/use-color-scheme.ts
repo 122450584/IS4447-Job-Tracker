@@ -2,19 +2,21 @@ import { useSyncExternalStore } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
 import {
-  getActiveColorScheme,
   getStoredThemePreference,
   subscribeThemePreference,
 } from '@/services/theme-preference-store';
 
 export function useColorScheme() {
   const systemScheme = useRNColorScheme();
-
-  useSyncExternalStore(
+  const preference = useSyncExternalStore(
     subscribeThemePreference,
     getStoredThemePreference,
     getStoredThemePreference
   );
 
-  return getActiveColorScheme(systemScheme);
+  if (preference === 'system') {
+    return systemScheme ?? 'light';
+  }
+
+  return preference;
 }

@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -27,6 +28,12 @@ export function useInsights(userId: number, period: InsightPeriod) {
   useEffect(() => {
     reloadInsights();
   }, [reloadInsights]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadInsights();
+    }, [reloadInsights])
+  );
 
   return {
     error,

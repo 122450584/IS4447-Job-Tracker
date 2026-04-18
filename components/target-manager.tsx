@@ -286,35 +286,26 @@ export function TargetManager({ userId }: TargetManagerProps) {
             <View>
               <ThemedText type="subtitle">Target streaks</ThemedText>
               <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
-                Consecutive completed periods where targets were met.
+                Consecutive periods met, including the current period once it reaches the target.
               </ThemedText>
             </View>
-            <MaterialIcons color={colors.tint} name="local-fire-department" size={28} />
           </View>
 
           <View style={styles.streakGrid}>
             <View style={styles.streakItem}>
-              <ThemedText style={styles.streakValue}>
-                {streakSummary.weekly.currentStreak}
-              </ThemedText>
+              <View style={styles.streakValueRow}>
+                <ThemedText style={styles.streakValue}>{streakSummary.weekly.currentStreak}</ThemedText>
+                <MaterialIcons color={colors.tint} name="local-fire-department" size={24} />
+              </View>
               <ThemedText type="defaultSemiBold">Weekly streak</ThemedText>
-              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
-                {streakSummary.weekly.trackedPeriods === 0
-                  ? 'No completed weekly targets'
-                  : `${streakSummary.weekly.metPeriods} of ${streakSummary.weekly.trackedPeriods} met`}
-              </ThemedText>
             </View>
 
             <View style={styles.streakItem}>
-              <ThemedText style={styles.streakValue}>
-                {streakSummary.monthly.currentStreak}
-              </ThemedText>
+              <View style={styles.streakValueRow}>
+                <ThemedText style={styles.streakValue}>{streakSummary.monthly.currentStreak}</ThemedText>
+                <MaterialIcons color={colors.tint} name="local-fire-department" size={24} />
+              </View>
               <ThemedText type="defaultSemiBold">Monthly streak</ThemedText>
-              <ThemedText lightColor={Colors.light.muted} darkColor={Colors.dark.muted}>
-                {streakSummary.monthly.trackedPeriods === 0
-                  ? 'No completed monthly targets'
-                  : `${streakSummary.monthly.metPeriods} of ${streakSummary.monthly.trackedPeriods} met`}
-              </ThemedText>
             </View>
           </View>
         </AppCard>
@@ -370,13 +361,13 @@ export function TargetManager({ userId }: TargetManagerProps) {
                   </View>
                 </View>
 
-                <View style={styles.progressTrack}>
+                <View style={[styles.progressTrack, { backgroundColor: colors.track }]}>
                   <View
                     style={[
                       styles.progressFill,
                       {
                         backgroundColor:
-                          targetProgress.state === 'unmet' ? colors.tint : '#2E7D32',
+                          targetProgress.state === 'unmet' ? colors.tint : colors.success,
                         width: `${progressPercent}%`,
                       },
                     ]}
@@ -459,7 +450,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   progressTrack: {
-    backgroundColor: '#D9E4DF',
     borderRadius: Radius.sm,
     height: 10,
     overflow: 'hidden',
@@ -470,10 +460,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   streakHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: Spacing.md,
-    justifyContent: 'space-between',
+    gap: Spacing.xs,
   },
   streakItem: {
     flex: 1,
@@ -484,6 +471,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     lineHeight: 38,
+  },
+  streakValueRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.xs,
   },
   targetActions: {
     flexDirection: 'row',

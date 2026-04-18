@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/theme';
 import { initializeDatabase } from '@/db/init';
 import { type Application, type ApplicationStatus, type Category } from '@/db/schema';
 import { listApplications } from '@/services/application-service';
@@ -195,7 +196,7 @@ function buildCategoryBreakdown(applications: Application[], categories: Categor
       return {
         categoryId,
         name: category?.name ?? 'Unknown',
-        color: category?.color ?? '#687076',
+        color: category?.color ?? Colors.light.icon,
         icon: category?.icon ?? 'work',
         total,
       };
