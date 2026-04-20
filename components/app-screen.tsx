@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Spacing } from '@/constants/theme';
 import { ThemedText } from './themed-text';
@@ -12,16 +13,18 @@ type AppScreenProps = PropsWithChildren<{
 
 export function AppScreen({ title, description, children }: AppScreenProps) {
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">{title}</ThemedText>
-          {description ? <ThemedText style={styles.summary}>{description}</ThemedText> : null}
-        </ThemedView>
+    <SafeAreaView edges={['top']} style={styles.container}>
+      <ThemedView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedView style={styles.header}>
+            <ThemedText type="title">{title}</ThemedText>
+            {description ? <ThemedText style={styles.summary}>{description}</ThemedText> : null}
+          </ThemedView>
 
-        {children}
-      </ScrollView>
-    </ThemedView>
+          {children}
+        </ScrollView>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -36,7 +39,7 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: Spacing.md,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.sm,
     paddingBottom: Spacing.sm,
   },
   summary: {

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '@/components/app-button';
@@ -60,9 +61,23 @@ function LeadCard({ lead }: { lead: JobLead }) {
   );
 }
 
+function matchesLeadQuery(lead: JobLead, query: string) {
+  if (!query) {
+    return true;
+  }
+
+  const searchable = [lead.title, lead.companyName, lead.category, lead.location, lead.jobType ?? '', lead.salary ?? '']
+    .join(' ')
+    .toLowerCase();
+
+  return searchable.includes(query);
+}
+
 export function JobLeadsList() {
   const { error, hasLoaded, isLoading, leads, loadLeads, searchText, setSearchText } = useJobLeads();
   const trimmedSearch = searchText.trim();
+  const query = trimmedSearch.toLowerCase();
+  const visibleLeads = useMemo(() => leads.filter((lead) => matchesLeadQuery(lead, query)), [leads, query]);
 
   return (
     <>
@@ -112,7 +127,7 @@ export function JobLeadsList() {
         </AppCard>
       ) : null}
 
-      {!error && hasLoaded && !isLoading && leads.length === 0 ? (
+      {!error && hasLoaded && !isLoading && visibleLeads.length === 0 ? (
         <EmptyState
           title="No job leads found"
           message="Try a broader search such as frontend, data, mobile, or junior developer."
@@ -120,7 +135,7 @@ export function JobLeadsList() {
       ) : null}
 
       <View style={styles.list}>
-        {leads.map((lead) => (
+        {visibleLeads.map((lead) => (
           <LeadCard key={lead.id} lead={lead} />
         ))}
       </View>

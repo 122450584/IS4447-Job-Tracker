@@ -56,13 +56,41 @@ function mapJobLead(job: RemotiveJob): JobLead {
 }
 
 export async function fetchJobLeads(searchText: string): Promise<JobLead[]> {
-  const response = await fetch(buildJobLeadsUrl(searchText));
+  const request = new AbortController();
+  const timeoutId = setTimeout(() => request.abort(), 10000);
 
-  if (!response.ok) {
+  try {
+    const response = await fetch(buildJobLeadsUrl(searchText), { signal: request.signal });
+
+    if (!response.ok) {
+      throw new Error('Job leads could not be loaded.');
+    }
+
+    const data = (await response.json()) as RemotiveResponse;
+    const query = searchText.trim().toLowerCase();
+    const leads = (data.jobs ?? []).map(mapJobLead);
+
+    if (!query) {
+      return leads;
+    }
+
+    return leads.filter((lead) =>
+      [lead.title, lead.companyName, lead.category, lead.location, lead.jobType ?? '', lead.salary ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query)
+    );
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Job leads request timed out. Check your connection and try again.');
+    }
+
+    if (err instanceof Error) {
+      throw err;
+    }
+
     throw new Error('Job leads could not be loaded.');
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = (await response.json()) as RemotiveResponse;
-
-  return (data.jobs ?? []).map(mapJobLead);
 }
