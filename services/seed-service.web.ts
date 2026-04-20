@@ -68,8 +68,8 @@ const targetsStorageKey = 'job_tracker_targets';
 const settingsStorageKey = 'job_tracker_settings';
 
 const demoUserId = 1;
-const demoUserEmail = 'demo.jobtracker@example.com';
-const demoPasswordHash = 'd6cb75dcbf467a0cf99351402299cb0834e77b3ca069d49542ab0cefd2697037';
+const demoUserEmail = 'demo@gmail.com';
+const demoPasswordHash = '94057203e97ed045baa64de38e1e65b5b558ba2470da812c2074691357da0d93';
 
 let hasInitializedSeed = false;
 
@@ -108,11 +108,6 @@ export function initializeSeedData() {
 
   const users = readList<StoredUser>(usersStorageKey);
   const hasDemoUser = users.some((user) => user.email === demoUserEmail);
-
-  if (users.length > 0 && !hasDemoUser) {
-    hasInitializedSeed = true;
-    return;
-  }
 
   const now = new Date().toISOString();
 

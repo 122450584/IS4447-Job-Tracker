@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { fetchJobLeads, type JobLead } from '@/services/job-leads-service';
 
-const defaultSearchText = 'react native';
+const defaultSearchText = '';
 
 export function useJobLeads() {
   const [leads, setLeads] = useState<JobLead[]>([]);

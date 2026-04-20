@@ -90,7 +90,7 @@ export function JobLeadsList() {
           autoCapitalize="none"
           label="Search"
           onChangeText={setSearchText}
-          placeholder="react native"
+          placeholder="Enter keywords"
           returnKeyType="search"
           value={searchText}
           onSubmitEditing={() => {

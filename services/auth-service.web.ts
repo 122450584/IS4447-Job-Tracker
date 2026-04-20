@@ -56,10 +56,14 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function normalizePassword(password: string) {
+  return password.toLowerCase();
+}
+
 async function hashPassword(email: string, password: string) {
   return Crypto.digestStringAsync(
     Crypto.CryptoDigestAlgorithm.SHA256,
-    `${normalizeEmail(email)}:${password}`
+    `${normalizeEmail(email)}:${normalizePassword(password)}`
   );
 }
 
@@ -72,8 +76,8 @@ function toAuthUser(user: StoredUser): AuthUser {
 }
 
 function validatePassword(password: string) {
-  if (password.length < 6) {
-    throw new Error('Password must be at least 6 characters.');
+  if (password.length < 4) {
+    throw new Error('Password must be at least 4 characters.');
   }
 }
 

@@ -98,7 +98,7 @@ jest.mock('@/db/client', () => {
             where() {
               return {
                 get() {
-                  return rows.users.find((u) => u.email === 'demo.jobtracker@example.com');
+                  return rows.users.find((u) => u.email === 'demo@gmail.com');
                 },
                 orderBy() {
                   return {

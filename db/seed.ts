@@ -12,8 +12,8 @@ import {
   users,
 } from './schema';
 
-const seedUserEmail = 'demo.jobtracker@example.com';
-const seedUserPasswordHash = 'd6cb75dcbf467a0cf99351402299cb0834e77b3ca069d49542ab0cefd2697037';
+const seedUserEmail = 'demo@gmail.com';
+const seedUserPasswordHash = '94057203e97ed045baa64de38e1e65b5b558ba2470da812c2074691357da0d93';
 
 const seedCategories = [
   { key: 'software', name: 'Software Engineering', color: '#1E5B4F', icon: 'code' },
